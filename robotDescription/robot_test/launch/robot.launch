@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- these are the arguments you can pass this launch file, for example paused:=true -->
+  <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+
+  <arg name="model" default="$(find xacro)/xacro --inorder '$(find robot_description_pkg)/urdf/diff_wheeled_robot.xacro'"/>
+
+  <!-- We resume the logic in empty_world.launch -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch"> <!-- 수정 해야 할 부분 -->
+    <arg name="world_name" value="$(find robot_test)/world/world.sdf"/> 
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="headless" value="$(arg headless)"/>
+  </include>
+
+  <node pkg="tf" type="static_transform_publisher" name="static_transform_publisher"
+    args="0.0 0.0 0.0 0.0 0.0 0.0 1.0 map base_footprint 50" output="screen"/>
+
+  <!-- urdf xml robot description loaded on the Parameter Server diff_wheeled_robot.xacro -->
+  <!-- param name="robot_description" command="$(find xacro)/xacro $(find robot_description_pkg)/urdf/diff_wheeled_robot.xacro" / -->  
+  <param name="robot_description" command="$(arg model)"/> 
+  <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" ></node> 
+  <!-- start robot state publisher -->
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen" >
+    <param name="publish_frequency" type="double" value="50.0" />
+  </node>
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find robot_test)/config.rviz" required="true" />
+
+  <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF robot -->
+  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+	args="-urdf -model diff_wheeled_robot -param robot_description">
+
+  </node>   
+
+</launch>

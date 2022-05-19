@@ -1,0 +1,10 @@
+<launch>
+  <!-- differential_teleop_key already has its own built in velocity smoother -->
+  <node pkg="turtlesim" type="turtle_teleop_key" name="robot_key_control"  output="screen">
+
+    <param name="scale_linear" value="0.001" type="double"/>
+    <param name="scale_angular" value="0.01" type="double"/>
+    <remap from="turtle1/cmd_vel" to="/cmd_vel"/> 
+
+  </node>
+</launch>
